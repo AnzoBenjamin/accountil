@@ -3,6 +3,7 @@ import { useDropzone } from "react-dropzone";
 import styles from './Uploader.module.css'
 import { Grid, LinearProgress } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
+import React from "react";
 
 
 
