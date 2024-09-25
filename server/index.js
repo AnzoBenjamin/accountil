@@ -2,6 +2,7 @@
 
 import express from "express";
 import cors from "cors";
+import path from "path";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
@@ -26,10 +27,10 @@ app.use(express.json({ limit: "30mb", extended: true }));
 app.use(express.urlencoded({ limit: "30mb", extended: true }));
 app.use(cors());
 
-app.use("/invoices", invoiceRoutes);
-app.use("/clients", clientRoutes);
-app.use("/users", userRoutes);
-app.use("/profiles", profile);
+app.use("/api/invoices", invoiceRoutes);
+app.use("/api/clients", clientRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/profiles", profile);
 
 // NODEMAILER TRANSPORT FOR SENDING INVOICE VIA EMAIL
 const transporter = nodemailer.createTransport({
@@ -116,9 +117,10 @@ app.get("/fetch-pdf", (req, res) => {
   res.sendFile(`${__dirname}/invoice.pdf`);
 });
 
-// Root Route
-app.get("/", (req, res) => {
-  res.send("SERVER IS RUNNING");
+app.use(express.static(path.join(__dirname, "./dist")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "./dist", "index.html"));
 });
 
 // Database Connection
