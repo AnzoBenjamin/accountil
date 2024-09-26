@@ -10,7 +10,7 @@ const profileSchema = mongoose.Schema({
     logo: String,
     website: String,
     userId: [String],
-})
+},{Collection:'accountil'})
 
 const Profile = mongoose.model('Profile', profileSchema)
 

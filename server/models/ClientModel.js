@@ -1,5 +1,5 @@
 import express from 'express'
-import mongoose from 'mongoose'
+import mongoose, { Collection } from 'mongoose'
 
 const ClientSchema = mongoose.Schema({
     name: String,
@@ -11,7 +11,7 @@ const ClientSchema = mongoose.Schema({
         type: Date,
         default: new Date()
     }
-})
+}, {Collection:'accountil'})
 
 const ClientModel = mongoose.model('ClientModel', ClientSchema)
 export default ClientModel

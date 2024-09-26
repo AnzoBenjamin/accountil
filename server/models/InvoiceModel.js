@@ -20,7 +20,7 @@ const InvoiceSchema = mongoose.Schema({
         type: Date,
         default: new Date()
     }
-})
+},{Collection:'accountil'})
 
 const InvoiceModel = mongoose.model('InvoiceModel', InvoiceSchema)
 export default InvoiceModel
