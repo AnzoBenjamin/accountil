@@ -6,7 +6,7 @@ const userSchema = mongoose.Schema({
     password: {type: String, required: true},
     resetToken:String,
     expireToken:Date,
-},{Collection:'accountil'})
+})
 
 const User = mongoose.model('User', userSchema)
 

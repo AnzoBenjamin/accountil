@@ -128,7 +128,7 @@ const DB_URL = process.env.DB_URL;
 const PORT = process.env.PORT || 5000;
 
 mongoose
-  .connect(DB_URL, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(DB_URL, { useNewUrlParser: true, useUnifiedTopology: true, dbName: "accountil" })
   .then(() =>
     app.listen(PORT, () => console.log(`Server running on port: ${PORT}`))
   )
