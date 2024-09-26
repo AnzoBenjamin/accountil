@@ -44,7 +44,9 @@ export const signin = async (req, res)=> {
 
 
 export const signup = async (req, res)=> {
+    console.log("triggered")
     const { email, password, confirmPassword, firstName, lastName, bio } = req.body
+    console.log(req)
 
     try {
         const existingUser = await User.findOne({ email })
@@ -63,6 +65,8 @@ export const signup = async (req, res)=> {
         res.status(200).json({ result, userProfile, token })
 
     } catch (error) {
+
+        console.log(error)
         res.status(500).json({ message: "Something went wrong"}) 
     }
 }
