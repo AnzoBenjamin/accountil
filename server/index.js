@@ -19,6 +19,7 @@ import userRoutes from "./routes/userRoutes.js";
 import profile from "./routes/profile.js";
 import pdfTemplate from "./documents/index.js"; // Assuming this generates HTML content for PDF
 import emailTemplate from "./documents/email.js";
+import inventoryRoutes from "./routes/inventory.js";
 
 const app = express();
 dotenv.config();
@@ -31,7 +32,7 @@ app.use("/api/invoices", invoiceRoutes);
 app.use("/api/clients", clientRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/profiles", profile);
-
+app.use("/api/inventory", inventoryRoutes);
 // NODEMAILER TRANSPORT FOR SENDING INVOICE VIA EMAIL
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -44,6 +45,8 @@ const transporter = nodemailer.createTransport({
     rejectUnauthorized: false,
   },
 });
+
+app.use("/api/inventory", inventoryRoutes);
 
 // Utility function to generate PDF using Puppeteer
 const generatePdf = async (htmlContent) => {

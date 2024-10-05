@@ -6,6 +6,16 @@ export const DELETE = "DELETE"
 export const GET_INVOICE = "GET_INVOICE"
 export const FETCH_INVOICE_BY_USER = "FETCH_INVOICE_BY_USER"
 
+// Inventory-related constants
+export const FETCH_INVENTORY = "FETCH_INVENTORY";         // Fetch all inventory items
+export const ADD_NEW_INVENTORY = "ADD_NEW_INVENTORY";     // Add a new inventory item
+export const UPDATE_INVENTORY = "UPDATE_INVENTORY";       // Update an inventory item
+export const DELETE_INVENTORY = "DELETE_INVENTORY";       // Delete an inventory item
+export const FETCH_INVENTORY_BY_ID = "FETCH_INVENTORY_BY_ID"; // Fetch single inventory item by ID
+
+export const INVENTORY_LOADING_START = "INVENTORY_LOADING_START"; // Loading state when interacting with inventory
+export const INVENTORY_LOADING_END = "INVENTORY_LOADING_END";     // End of loading state for inventory
+
 
 export const ALL_CLIENTS = "ALL_CLIENTS"
 export const UPDATE_CLIENT = "UPDATE_CLIENT"

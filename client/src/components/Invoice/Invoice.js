@@ -1,4 +1,4 @@
-import React, { useState, useEffect} from 'react'
+import React, { useState, useEffect, useCallback} from 'react'
 import styles from './Invoice.module.css'
 import { useDispatch, useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
@@ -36,6 +36,7 @@ import AddClient from './AddClient';
 import InvoiceType from './InvoiceType';
 import axios from 'axios'
 import { useLocation } from 'react-router-dom'
+import { getInventoryItems } from '../../actions/inventoryActions';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -80,32 +81,43 @@ const Invoice = () => {
     const dispatch = useDispatch()
     const history = useHistory()
     const user = JSON.parse(localStorage.getItem('profile'))
+    const [availableItems, setAvailableItems] = useState([]);
+    const { inventoryItems } = useSelector((state) => state.inventory);
 
-
-    useEffect(() => {
-        getTotalCount()
-         // eslint-disable-next-line
-    },[location])
-
-
-    const getTotalCount = async() => {
-        try {
-          const response = await axios.get(`${process.env.REACT_APP_API}/invoices/count?searchQuery=${user?.result?._id}`);
-        //   console.log(response.data);
-        //Get total count of invoice from the server and increment by one to serialized numbering of invoice
-        setInvoiceData({...invoiceData, invoiceNumber: (Number(response.data) + 1).toString().padStart(3, '0')})
-        } catch (error) {
-          console.error(error);
-        }
+    const getTotalCount = useCallback(async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API}/invoices/count?searchQuery=${user?.result?._id}`);
+        setInvoiceData(prevData => ({ 
+          ...prevData, 
+          invoiceNumber: (Number(response.data) + 1).toString().padStart(3, '0')
+        }));
+      } catch (error) {
+        console.error(error);
       }
+    }, [user?.result?._id]);
+  
       
+    useEffect(() => {
+        getTotalCount();
+        dispatch(getInventoryItems());
+      }, [getTotalCount]);
+      
+      useEffect(() => {
+        if (inventoryItems) {
+          setAvailableItems(inventoryItems);
+        }
+      }, [inventoryItems]);
+
+
+
 
 
 
     useEffect(() => {
-        dispatch(getInvoice(id));
-        // eslint-disable-next-line
-      }, [id]);
+        if (id) {
+          dispatch(getInvoice(id));
+        }
+      }, [id, dispatch]);
 
     useEffect(() => {
         dispatch(getClientsByUser({search: user?.result._id || user?.result?.googleId}));
@@ -114,25 +126,27 @@ const Invoice = () => {
 
 
     useEffect(() => {
-        if(invoice) {
-            //Automatically set the default invoice values as the ones in the invoice to be updated
-            setInvoiceData(invoice)
-            setRates(invoice.rates)
-            setClient(invoice.client)
-            setType(invoice.type)
-            setStatus(invoice.status)
-            setSelectedDate(invoice.dueDate)
-        }
-    }, [invoice])
+      // Don't update state if values are the same, prevent re-render loops
+      if (invoice) {
+          setInvoiceData(prevData => {
+              if (
+                prevData !== invoice || // Compare objects directly
+                prevData.rates !== invoice.rates ||
+                prevData.client !== invoice.client ||
+                prevData.dueDate !== invoice.dueDate
+              ) {
+                return { ...invoice };
+              }
+              return prevData;
+          });
+      }
+  }, [invoice]);  // Keep dependencies minimal
+  
 
  
     useEffect(() => {
-        if(type === 'Receipt') {
-            setStatus('Paid')
-        } else {
-            setStatus('Unpaid')
-        }
-    },[type])
+        setStatus(type === 'Receipt' ? 'Paid' : 'Unpaid');
+    }, [type]);
     
     const defaultProps = {
         options: currencies,
@@ -156,12 +170,29 @@ const Invoice = () => {
 
     // console.log(invoiceData)
     // Change handler for dynamically added input field
-    const handleChange =(index, e) => {
-        const values = [...invoiceData.items]
-        values[index][e.target.name] = e.target.value
-        setInvoiceData({...invoiceData, items: values})
-        
-    }
+    const handleChange = (index, e) => {
+      const { name, value } = e.target;
+      setInvoiceData(prevState => {
+        const updatedItems = [...prevState.items];
+        if (name === 'itemName') {
+          const selectedItem = availableItems.find(item => item.itemName === value);
+          if (selectedItem) {
+            updatedItems[index] = {
+              ...updatedItems[index],
+              itemName: selectedItem.itemName,
+              unitPrice: selectedItem.unitPrice,
+              quantity: updatedItems[index].quantity || 1 // Set default quantity to 1 if not already set
+            };
+          }
+        } else {
+          updatedItems[index] = {
+            ...updatedItems[index],
+            [name]: value
+          };
+        }
+        return { ...prevState, items: updatedItems };
+      });
+    };
 
     useEffect(() => {
             //Get the subtotal
@@ -199,7 +230,13 @@ const Invoice = () => {
 
     const handleAddField = (e) => {
         e.preventDefault()
-        setInvoiceData((prevState) => ({...prevState, items: [...prevState.items,  {itemName: '', unitPrice: '', quantity: '', discount: '', amount: '' }]}))
+        setInvoiceData((prevState) => ({
+          ...prevState, 
+          items: [
+            ...prevState.items,  
+            {itemName: '', unitPrice: '', quantity: '', discount: '', amount: '', inventoryItem: null}
+          ]
+        }))
     }
 
     const handleRemoveField =(index) => {
@@ -210,7 +247,6 @@ const Invoice = () => {
     }
     
 
-    console.log(invoiceData)
 
     const handleSubmit =  async (e ) => {
         e.preventDefault()
@@ -383,17 +419,64 @@ const Invoice = () => {
             <TableBody>
             {invoiceData.items.map((itemField, index) => (
                 <TableRow key={index}>
-                <TableCell  scope="row" style={{width: '40%' }}> <InputBase style={{width: '100%'}} outline="none" sx={{ ml: 1, flex: 1 }} type="text" name="itemName" onChange={e => handleChange(index, e)} value={itemField.itemName} placeholder="Item name or description" /> </TableCell>
-                <TableCell align="right"> <InputBase sx={{ ml: 1, flex: 1 }} type="number" name="quantity" onChange={e => handleChange(index, e)} value={itemField.quantity} placeholder="0" /> </TableCell>
-                <TableCell align="right"> <InputBase sx={{ ml: 1, flex: 1 }} type="number" name="unitPrice" onChange={e => handleChange(index, e)} value={itemField.unitPrice} placeholder="0" /> </TableCell>
-                <TableCell align="right"> <InputBase sx={{ ml: 1, flex: 1 }} type="number" name="discount"  onChange={e => handleChange(index, e)} value={itemField.discount} placeholder="0" /> </TableCell>
-                <TableCell align="right"> <InputBase sx={{ ml: 1, flex: 1 }} type="number" name="amount" onChange={e => handleChange(index, e)}  value={(itemField.quantity * itemField.unitPrice) - (itemField.quantity * itemField.unitPrice) * itemField.discount / 100} disabled /> </TableCell>
-                <TableCell align="right"> 
-                    <IconButton onClick={() =>handleRemoveField(index)}>
-                        <DeleteOutlineRoundedIcon style={{width: '20px', height: '20px'}}/>
+                  <TableCell scope="row" style={{width: '40%'}}>
+                    <select
+                      style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '4px'}}
+                      name="itemName"
+                      onChange={(e) => handleChange(index, e)}
+                      value={itemField.itemName || ''}
+                    >
+                      <option value="">Select an item</option>
+                      {availableItems.map((item, i) => (
+                        <option key={i} value={item.itemName}>{item.itemName}</option>
+                      ))}
+                    </select>
+                  </TableCell>
+                  <TableCell align="right">
+                    <InputBase
+                      sx={{ ml: 1, flex: 1 }}
+                      type="number"
+                      name="quantity"
+                      onChange={e => handleChange(index, e)}
+                      value={itemField.quantity}
+                      placeholder="0"
+                    />
+                  </TableCell>
+                  <TableCell align="right">
+                    <InputBase
+                      sx={{ ml: 1, flex: 1 }}
+                      type="number"
+                      name="unitPrice"
+                      onChange={e => handleChange(index, e)}
+                      value={itemField.unitPrice}
+                      placeholder="0"
+                    />
+                  </TableCell>
+                  <TableCell align="right">
+                    <InputBase
+                      sx={{ ml: 1, flex: 1 }}
+                      type="number"
+                      name="discount"
+                      onChange={e => handleChange(index, e)}
+                      value={itemField.discount}
+                      placeholder="0"
+                    />
+                  </TableCell>
+                  <TableCell align="right">
+                    <InputBase
+                      sx={{ ml: 1, flex: 1 }}
+                      type="number"
+                      name="amount"
+                      onChange={e => handleChange(index, e)}
+                      value={(itemField.quantity * itemField.unitPrice) - (itemField.quantity * itemField.unitPrice) * itemField.discount / 100}
+                      disabled
+                    />
+                  </TableCell>
+                  <TableCell align="right">
+                    <IconButton onClick={() => handleRemoveField(index)}>
+                      <DeleteOutlineRoundedIcon style={{width: '20px', height: '20px'}}/>
                     </IconButton>
-                </TableCell>
-                
+                  </TableCell>
                 </TableRow>
             ))}
             </TableBody>

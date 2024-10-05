@@ -38,3 +38,10 @@ export const fetchProfilesByUser = (searchQuery) => API.get(`/profiles?searchQue
 export const createProfile = (newProfile) => API.post('/profiles', newProfile);
 export const updateProfile = (id, updatedProfile) => API.patch(`/profiles/${id}`, updatedProfile);
 export const deleteProfile = (id) => API.delete(`/profiles/${id}`);
+
+// Inventory API calls
+export const fetchInventoryItems = () => API.get('/inventory');
+export const fetchInventoryItemById = (id) => API.get(`/inventory/${id}`);
+export const addInventoryItem = (item) => API.post('/inventory', item);
+export const updateInventoryItem = (id, updatedItem) => API.put(`/inventory/${id}`, updatedItem);
+export const deleteInventoryItem = (id) => API.delete(`/inventory/${id}`);
