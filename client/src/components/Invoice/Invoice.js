@@ -35,7 +35,7 @@ import { getClientsByUser } from '../../actions/clientActions'
 import AddClient from './AddClient';
 import InvoiceType from './InvoiceType';
 import axios from 'axios'
-import { getInventoryItems } from '../../actions/inventoryActions';
+import { getInventoryByUser } from '../../actions/inventoryActions';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -80,8 +80,10 @@ const Invoice = () => {
     const history = useHistory()
     const user = JSON.parse(localStorage.getItem('profile'))
     const [availableItems, setAvailableItems] = useState([]);
-    const { inventoryItems } = useSelector((state) => state.inventory);
-
+    const rows = useSelector(state => state.invoices.invoices)
+    const { inventoryItems, inventoryItem } = useSelector(
+      (state) => state.inventory
+    ); // Use Redux state for inventory
     const getTotalCount = useCallback(async () => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_API}/invoices/count?searchQuery=${user?.result?._id}`);
@@ -97,10 +99,11 @@ const Invoice = () => {
       
     useEffect(() => {
         getTotalCount();
-        dispatch(getInventoryItems());
-      }, [getTotalCount, dispatch]);
+        dispatch(getInventoryByUser({ search: user.result._id || user.result.googleId }));
+      }, [getTotalCount, dispatch, user?.result?._id || user?.result?.googleId]);
       
       useEffect(() => {
+        console.log(inventoryItems)
         if (inventoryItems) {
           setAvailableItems(inventoryItems);
         }
@@ -180,7 +183,7 @@ const Invoice = () => {
               itemName: selectedItem.itemName,
               unitPrice: selectedItem.unitPrice,
               quantity: updatedItems[index].quantity || 1,
-              inventoryItem: selectedItem._id // Add this line
+              inventoryItem: selectedItem._id
             };
           }
         } else {
@@ -272,7 +275,7 @@ const Invoice = () => {
           type: type,
           status: status,
           paymentRecords: [],
-          creator: user?.result?.email || user?.result?.googleId,
+          creator: user?.result?._id || user?.result?.googleId,
           totalAmountReceived: 0,
           createdAt: new Date().toISOString()
         };

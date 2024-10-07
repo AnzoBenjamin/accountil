@@ -12,7 +12,7 @@ export const ADD_NEW_INVENTORY = "ADD_NEW_INVENTORY";     // Add a new inventory
 export const UPDATE_INVENTORY = "UPDATE_INVENTORY";       // Update an inventory item
 export const DELETE_INVENTORY = "DELETE_INVENTORY";       // Delete an inventory item
 export const FETCH_INVENTORY_BY_ID = "FETCH_INVENTORY_BY_ID"; // Fetch single inventory item by ID
-
+export const FETCH_INVENTORY_BY_USER = "FETCH_INVENTORY_BY_USER"; // Fetch single inventory item by ID
 export const INVENTORY_LOADING_START = "INVENTORY_LOADING_START"; // Loading state when interacting with inventory
 export const INVENTORY_LOADING_END = "INVENTORY_LOADING_END";     // End of loading state for inventory
 

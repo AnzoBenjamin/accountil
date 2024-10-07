@@ -5,6 +5,7 @@ import {
     DELETE_INVENTORY, 
     FETCH_INVENTORY, 
     FETCH_INVENTORY_BY_ID, 
+    FETCH_INVENTORY_BY_USER,
     INVENTORY_LOADING_START, 
     INVENTORY_LOADING_END 
 } from './constants';
@@ -44,7 +45,10 @@ export const createInventoryItem = (item, history) => async (dispatch) => {
     try {
         dispatch({ type: INVENTORY_LOADING_START });
         
-        const { data } = await api.addInventoryItem(item);
+        const user = JSON.parse(localStorage.getItem('profile'));
+        const itemWithCreator = { ...item, creator: user?.result?._id || user?.result?.googleId };
+        
+        const { data } = await api.addInventoryItem(itemWithCreator);
         
         dispatch({ type: ADD_NEW_INVENTORY, payload: data });
         
@@ -97,5 +101,21 @@ export const deleteInventoryItem = (id, openSnackbar) => async (dispatch) => {
         openSnackbar("Inventory item deleted successfully");
     } catch (error) {
         console.log(error.response);
+    }
+};
+
+// Fetch inventory items by user
+export const getInventoryByUser = (searchQuery) => async (dispatch) => {
+    try {
+        dispatch({ type: INVENTORY_LOADING_START });
+        
+        const { data } = await api.fetchInventoryItemsByUser(searchQuery);
+        console.log(data.data)
+        
+        dispatch({ type: FETCH_INVENTORY_BY_USER, payload: data.data });
+        
+        dispatch({ type: INVENTORY_LOADING_END });
+    } catch (error) {
+        console.error('Error fetching inventory items:', error);
     }
 };

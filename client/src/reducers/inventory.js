@@ -5,7 +5,8 @@ import {
     DELETE_INVENTORY, 
     FETCH_INVENTORY_BY_ID, 
     INVENTORY_LOADING_START, 
-    INVENTORY_LOADING_END 
+    INVENTORY_LOADING_END ,
+    FETCH_INVENTORY_BY_USER
 } from '../actions/constants';
 
 const inventory = (state = { isLoading: true, inventoryItems: [] }, action) => {
@@ -47,6 +48,14 @@ const inventory = (state = { isLoading: true, inventoryItems: [] }, action) => {
                 ...state,
                 inventoryItems: state.inventoryItems.filter((item) => item._id !== action.payload),
             };
+                    
+        case FETCH_INVENTORY_BY_USER:
+            return {
+                ...state,
+                inventoryItems: action.payload,
+                isLoading: false
+            };
+        
         
         default:
             return state;

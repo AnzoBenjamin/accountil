@@ -4,7 +4,8 @@ import {
     getInventoryItems, 
     getInventoryItemById, 
     updateInventoryItem, 
-    deleteInventoryItem 
+    deleteInventoryItem ,
+    getInventoryByUser
 } from '../controllers/inventory.js';
 
 const router = express.Router();
@@ -17,6 +18,9 @@ router.get('/', getInventoryItems);
 
 // Route to get a single inventory item by ID
 router.get('/:id', getInventoryItemById);
+
+
+router.get('/user/:id', getInventoryByUser);
 
 // Route to update an inventory item by ID
 router.put('/:id', updateInventoryItem);

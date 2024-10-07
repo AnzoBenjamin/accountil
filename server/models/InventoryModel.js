@@ -15,6 +15,7 @@ const InventorySchema = new mongoose.Schema({
     required: true,
     min: 0,
   },
+  creator: String,
   unitPrice: {
     type: Number,
     required: true,

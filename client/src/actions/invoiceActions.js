@@ -11,18 +11,34 @@ import { ADD_NEW, UPDATE, DELETE, GET_INVOICE, FETCH_INVOICE_BY_USER, START_LOAD
 //     }
 // }
 
-export const getInvoicesByUser =(searchQuery) => async (dispatch) => {
+export const getInvoicesByUser = (searchQuery) => async (dispatch) => {
     try {
-      dispatch({ type: START_LOADING })
-    const  { data: { data } } = await api.fetchInvoicesByUser(searchQuery)
-      dispatch({ type: FETCH_INVOICE_BY_USER, payload: data });
-      dispatch({ type: END_LOADING })
-    } catch (error) {
-      console.log(error.response)
-      
-    }
-  }
+        console.log('Dispatching getInvoicesByUser with:', searchQuery);
+        dispatch({ type: START_LOADING });
 
+        // Correct destructuring based on API response
+        const  { data: { data } } = await api.fetchInvoicesByUser(searchQuery)        
+        console.log('Fetched invoices:', data);
+
+        // Fetch inventory items
+        const inventoryResponse = await api.fetchInventoryItems();
+        const inventoryItems = inventoryResponse.data;
+        console.log('Fetched inventory items:', inventoryItems);
+
+        // Dispatch with the correct payload structure
+        dispatch({ 
+            type: FETCH_INVOICE_BY_USER, 
+            payload: { 
+                invoices: data, 
+                inventoryItems: inventoryItems 
+            } 
+        });
+
+        dispatch({ type: END_LOADING });
+    } catch (error) {
+        console.error('Error fetching invoices:', error.response || error.message);
+    }
+}
 
 export const getInvoice = (id) => async (dispatch)=> {
 
@@ -39,15 +55,22 @@ export const getInvoice = (id) => async (dispatch)=> {
     }
 }
 
-export const createInvoice =(invoice, history) => async (dispatch) => {
+export const createInvoice = (invoice, history) => async (dispatch) => {
     try {
-        dispatch({ type: START_LOADING })
-        const { data } = await api.addInvoice(invoice)
-        dispatch({ type: ADD_NEW, payload: data })
-        history.push(`/invoice/${data._id}`)
-        dispatch({ type: END_LOADING })
+        dispatch({ type: START_LOADING });
+        const formattedInvoice = {
+            ...invoice,
+            items: invoice.items.map(item => ({
+                ...item,
+                inventoryItem: item.inventoryItem // Ensure this is included
+            }))
+        };
+        const { data } = await api.addInvoice(formattedInvoice);
+        dispatch({ type: ADD_NEW, payload: data });
+        history.push(`/invoice/${data._id}`);
+        dispatch({ type: END_LOADING });
     } catch (error) {
-        console.log(error)
+        console.log(error);
     }
 }
 

@@ -61,7 +61,7 @@ const DialogActions = withStyles((theme) => ({
 const AddClient = ({ setOpen, open }) => {
 
     const location = useLocation()
-    const [clientData, setClientData] = useState({ name: '', email: '', phone: '', address: '', userId: [] })
+    const [clientData, setClientData] = useState({ name: '', email: '', phone: '', address: '', userId: "" })
     const dispatch = useDispatch()
     const user = JSON.parse(localStorage.getItem('profile'))
        // eslint-disable-next-line 
@@ -71,9 +71,9 @@ const AddClient = ({ setOpen, open }) => {
     useEffect(() => {
       var checkId = user?.result?._id
       if(checkId !== undefined) {
-        setClientData({...clientData, userId: [checkId]})
+        setClientData({...clientData, userId: checkId})
       } else {
-        setClientData({...clientData, userId: [user?.result?.googleId]})
+        setClientData({...clientData, userId: user?.result?.googleId})
       }
     },[location])
    
@@ -87,7 +87,7 @@ const AddClient = ({ setOpen, open }) => {
     }
 
   const clear =() => {
-    setClientData({ name: '', email: '', phone: '', address: '', userId: [] })
+    setClientData({ name: '', email: '', phone: '', address: '', userId: "" })
   }
     
   const handleClose = () => {

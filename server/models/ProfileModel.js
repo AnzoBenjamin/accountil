@@ -9,7 +9,7 @@ const profileSchema = mongoose.Schema({
     paymentDetails: String, 
     logo: String,
     website: String,
-    userId: [String],
+    userId: String,
 })
 
 const Profile = mongoose.model('Profile', profileSchema)

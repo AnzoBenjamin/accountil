@@ -3,7 +3,7 @@ import styles from "./Inventory.module.css";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, useHistory } from "react-router-dom";
 import {
-  getInventoryItems,
+  getInventoryByUser,
   createInventoryItem,
   updateInventoryItem,
 } from "../../actions/inventoryActions";
@@ -21,6 +21,7 @@ import Divider from "@material-ui/core/Divider";
 import Button from "@material-ui/core/Button";
 import SaveIcon from "@material-ui/icons/Save";
 import { makeStyles } from "@material-ui/core/styles";
+import currencies from '../../currencies.json'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -44,6 +45,8 @@ const Inventory = () => {
   const dispatch = useDispatch();
   const history = useHistory();
   const { id } = useParams(); // For edit case, get inventory item ID from URL
+  const [currency, setCurrency] = useState(currencies[0].value)
+
 
   const [inventoryData, setInventoryData] = useState({
     itemName: "",
@@ -63,9 +66,12 @@ const Inventory = () => {
   const [allInventoryItems, setAllInventoryItems] = useState([]);
 
   useEffect(() => {
-    dispatch(getInventoryItems());
+    const user = JSON.parse(localStorage.getItem('profile'));
+    if (user?.result?._id || user?.result?.googleId) {
+      dispatch(getInventoryByUser({ search: user.result._id || user.result.googleId }));
+    }
   }, [dispatch]);
-  
+
   useEffect(() => {
     if (inventoryItems) {
       setAllInventoryItems(inventoryItems);
@@ -75,7 +81,7 @@ const Inventory = () => {
   // Fetch inventory item if editing an existing one
   useEffect(() => {
     if (id) {
-      dispatch(getInventoryItems(id));
+      dispatch(getInventoryByUser({ search: id }));
     }
   }, [id, dispatch]);
 
@@ -106,9 +112,11 @@ const Inventory = () => {
       dispatch(updateInventoryItem(inventoryData._id, inventoryData));
     } else {
       console.log('Creating new inventory item');
-      dispatch(createInventoryItem(inventoryData, history));
+      const user = JSON.parse(localStorage.getItem('profile'));
+      const itemWithCreator = { ...inventoryData, creator: [user?.result?._id || user?.result?.googleId] };
+      dispatch(createInventoryItem(itemWithCreator, history));
     }
-  
+
     // Update total inventory value
     const updatedItems = inventoryData._id 
       ? allInventoryItems.map(item => item._id === inventoryData._id ? inventoryData : item)
@@ -238,7 +246,7 @@ const Inventory = () => {
         </Container>
         <div className={styles.inventorySummary}>
           <Typography variant="h6">
-            Total Inventory Value: ${totalInventoryValue}
+            Total Inventory Value: {currency} {totalInventoryValue}
           </Typography>
         </div>
         <Grid container justifyContent="center">

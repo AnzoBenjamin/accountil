@@ -42,6 +42,7 @@ export const deleteProfile = (id) => API.delete(`/profiles/${id}`);
 // Inventory API calls
 export const fetchInventoryItems = () => API.get('/inventory');
 export const fetchInventoryItemById = (id) => API.get(`/inventory/${id}`);
+export const fetchInventoryItemsByUser = (id) => API.get(`/inventory/user/${id.search}`);
 export const addInventoryItem = (item) => API.post('/inventory', item);
 export const updateInventoryItem = (id, updatedItem) => API.put(`/inventory/${id}`, updatedItem);
 export const deleteInventoryItem = (id) => API.delete(`/inventory/${id}`);

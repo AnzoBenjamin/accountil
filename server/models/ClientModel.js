@@ -6,7 +6,7 @@ const ClientSchema = mongoose.Schema({
     email: String,
     phone: String,
     address: String,
-    userId: [String],
+    userId: String,
     createdAt: {
         type: Date,
         default: new Date()

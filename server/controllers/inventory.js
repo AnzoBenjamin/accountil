@@ -2,7 +2,7 @@ import InventoryModel from '../models/InventoryModel.js';
 
 // Create a new inventory item
 export const createInventoryItem = async (req, res) => {
-  const { itemName, sku, quantity, unitPrice, supplier, category, threshold, description } = req.body;
+  const { itemName, sku, quantity, unitPrice, supplier, category, threshold, description, creator } = req.body;
 
   try {
     const newItem = new InventoryModel({
@@ -14,6 +14,7 @@ export const createInventoryItem = async (req, res) => {
       category,
       threshold,
       description,
+      creator
     });
 
     const savedItem = await newItem.save();
@@ -74,5 +75,18 @@ export const deleteInventoryItem = async (req, res) => {
     res.status(200).json({ message: 'Item deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting item', error });
+  }
+};
+
+// Add this new function
+export const getInventoryByUser = async (req, res) => {
+  const { id: _id } = req.params;
+  console.log(_id)
+
+  try {
+    const inventoryItems = await InventoryModel.find({ creator: _id });
+    res.status(200).json({ data: inventoryItems });
+  } catch (error) {
+    res.status(404).json({ message: error.message });
   }
 };
